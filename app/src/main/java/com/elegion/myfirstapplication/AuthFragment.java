@@ -55,18 +55,10 @@ public class AuthFragment extends Fragment {
             if (isEmailValid() && isPasswordValid()) {
 
 
-                /*
-
-                String email = mEmail.getText().toString();
-                String password = mPassword.getText().toString();
-                String credential = "Basic " + Base64.encodeToString((email + password).getBytes(), Base64.NO_WRAP);
-                */
-
-                OkHttpClient client = ApiUtils.getBasicAuthClient(
+                ApiUtils.rebuildRetrofit(ApiUtils.getBasicAuthClient(
                         mEmail.getText().toString(),
                         mPassword.getText().toString(),
-                        true);
-
+                        true));
 
                 ApiUtils.getApiService().authentication().enqueue(
                     new retrofit2.Callback<User>() {
@@ -83,10 +75,8 @@ public class AuthFragment extends Fragment {
                                     showMessage(R.string.auth_error);
                                 } else {
                                     try {
-                                        Gson gson = new Gson();
-                                        JsonObject json = gson.fromJson(response.body().toString(), JsonObject.class);
-                                        User user = gson.fromJson(json.get("data"), User.class);
 
+                                        User user = response.body();
                                         Intent startProfileIntent = new Intent(getActivity(), ProfileActivity.class);
                                         startProfileIntent.putExtra(ProfileActivity.USER_KEY, user);
                                         startActivity(startProfileIntent);

@@ -3,7 +3,9 @@ package com.elegion.myfirstapplication;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.elegion.myfirstapplication.model.User;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 
@@ -60,6 +62,31 @@ public class ApiUtils {
                     .build();
         }
         return retrofit;
+    }
+
+    public static void rebuildRetrofit(OkHttpClient client) {
+        if (gson == null) {
+            gson = new Gson();
+        }
+
+        retrofit = new Retrofit.Builder()
+                .baseUrl(BuildConfig.SERVER_URL)
+                // need for interceptors
+                .client(client)
+                .addConverterFactory(buildUserGsonConverter())
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+    }
+
+
+    private static GsonConverterFactory buildUserGsonConverter() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+
+        // Adding custom deserializers
+        gsonBuilder.registerTypeAdapter(User.class, new UserDeserializer());
+        Gson myGson = gsonBuilder.create();
+
+        return GsonConverterFactory.create(myGson);
     }
 
     public static AcademyApi getApiService() {
