@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +30,7 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import retrofit2.Retrofit;
 
 public class AuthFragment extends Fragment {
     private AutoCompleteTextView mEmail;
@@ -51,6 +53,65 @@ public class AuthFragment extends Fragment {
         @Override
         public void onClick(View view) {
             if (isEmailValid() && isPasswordValid()) {
+
+
+                /*
+
+                String email = mEmail.getText().toString();
+                String password = mPassword.getText().toString();
+                String credential = "Basic " + Base64.encodeToString((email + password).getBytes(), Base64.NO_WRAP);
+                */
+
+                OkHttpClient client = ApiUtils.getBasicAuthClient(
+                        mEmail.getText().toString(),
+                        mPassword.getText().toString(),
+                        true);
+
+
+                ApiUtils.getApiService().authentication().enqueue(
+                    new retrofit2.Callback<User>() {
+                        //используем Handler, чтобы показывать ошибки в Main потоке, т.к. наши коллбеки возвращаются в рабочем потоке
+                        Handler mainHandler = new Handler(getActivity().getMainLooper());
+
+                        @Override
+                        public void onResponse(retrofit2.Call<User> call, final retrofit2.Response<User> response) {
+                            mainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                if (!response.isSuccessful()) {
+                                    //todo добавить полноценную обработку ошибок по кодам ответа от сервера и телу запроса
+                                    showMessage(R.string.auth_error);
+                                } else {
+                                    try {
+                                        Gson gson = new Gson();
+                                        JsonObject json = gson.fromJson(response.body().toString(), JsonObject.class);
+                                        User user = gson.fromJson(json.get("data"), User.class);
+
+                                        Intent startProfileIntent = new Intent(getActivity(), ProfileActivity.class);
+                                        startProfileIntent.putExtra(ProfileActivity.USER_KEY, user);
+                                        startActivity(startProfileIntent);
+                                        getActivity().finish();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onFailure(retrofit2.Call<User> call, Throwable t) {
+                            mainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    showMessage(R.string.request_error);
+                                }
+                            });
+                        }
+                    });
+
+                /*
+
                 Request request = new Request.Builder()
                         .url(BuildConfig.SERVER_URL.concat("/user"))
                         .build();
@@ -99,6 +160,8 @@ public class AuthFragment extends Fragment {
                         });
                     }
                 });
+
+                */
             } else {
                 showMessage(R.string.input_error);
             }
