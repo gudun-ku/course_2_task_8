@@ -95,4 +95,12 @@ public class ApiUtils {
         }
         return api;
     }
+
+    public static AcademyApi getApiService(boolean createNewInstance) {
+        if (createNewInstance || api == null) {
+            api = getRetrofit().create(AcademyApi.class);
+        }
+        return api;
+    }
+
 }

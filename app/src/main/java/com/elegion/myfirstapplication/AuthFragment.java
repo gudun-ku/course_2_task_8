@@ -60,7 +60,7 @@ public class AuthFragment extends Fragment {
                         mPassword.getText().toString(),
                         true));
 
-                ApiUtils.getApiService().authentication().enqueue(
+                ApiUtils.getApiService(true).authentication().enqueue(
                     new retrofit2.Callback<User>() {
                         //используем Handler, чтобы показывать ошибки в Main потоке, т.к. наши коллбеки возвращаются в рабочем потоке
                         Handler mainHandler = new Handler(getActivity().getMainLooper());
