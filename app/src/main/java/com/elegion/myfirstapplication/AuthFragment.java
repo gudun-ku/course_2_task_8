@@ -55,12 +55,9 @@ public class AuthFragment extends Fragment {
             if (isEmailValid() && isPasswordValid()) {
 
 
-                ApiUtils.rebuildRetrofit(ApiUtils.getBasicAuthClient(
-                        mEmail.getText().toString(),
-                        mPassword.getText().toString(),
-                        true));
 
-                ApiUtils.getApiService(true).authentication().enqueue(
+
+                ApiUtils.getApiService(mEmail.getText().toString(),mPassword.getText().toString(),true).authentication().enqueue(
                     new retrofit2.Callback<User>() {
                         //используем Handler, чтобы показывать ошибки в Main потоке, т.к. наши коллбеки возвращаются в рабочем потоке
                         Handler mainHandler = new Handler(getActivity().getMainLooper());

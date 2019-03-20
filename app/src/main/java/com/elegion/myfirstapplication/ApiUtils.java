@@ -64,7 +64,7 @@ public class ApiUtils {
         return retrofit;
     }
 
-    public static void rebuildRetrofit(OkHttpClient client) {
+    public static Retrofit rebuildRetrofit(OkHttpClient client) {
         if (gson == null) {
             gson = new Gson();
         }
@@ -76,13 +76,15 @@ public class ApiUtils {
                 .addConverterFactory(buildUserGsonConverter())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
+
+        return retrofit;
     }
 
 
     private static GsonConverterFactory buildUserGsonConverter() {
         GsonBuilder gsonBuilder = new GsonBuilder();
 
-        // Adding custom deserializers
+        // Adding custom deserializer
         gsonBuilder.registerTypeAdapter(User.class, new UserDeserializer());
         Gson myGson = gsonBuilder.create();
 
@@ -96,9 +98,15 @@ public class ApiUtils {
         return api;
     }
 
-    public static AcademyApi getApiService(boolean createNewInstance) {
+    public static AcademyApi getApiService(String email, String password, boolean createNewInstance) {
         if (createNewInstance || api == null) {
-            api = getRetrofit().create(AcademyApi.class);
+
+
+            api = rebuildRetrofit(getBasicAuthClient(
+                  email,
+                  password,
+                    true))
+                    .create(AcademyApi.class);
         }
         return api;
     }
