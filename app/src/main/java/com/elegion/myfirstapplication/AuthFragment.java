@@ -54,9 +54,6 @@ public class AuthFragment extends Fragment {
         public void onClick(View view) {
             if (isEmailValid() && isPasswordValid()) {
 
-
-
-
                 ApiUtils.getApiService(mEmail.getText().toString(),mPassword.getText().toString(),true).authentication().enqueue(
                     new retrofit2.Callback<User>() {
                         //используем Handler, чтобы показывать ошибки в Main потоке, т.к. наши коллбеки возвращаются в рабочем потоке
@@ -97,58 +94,6 @@ public class AuthFragment extends Fragment {
                         }
                     });
 
-                /*
-
-                Request request = new Request.Builder()
-                        .url(BuildConfig.SERVER_URL.concat("/user"))
-                        .build();
-
-                OkHttpClient client = ApiUtils.getBasicAuthClient(
-                        mEmail.getText().toString(),
-                        mPassword.getText().toString(),
-                        true);
-                client.newCall(request).enqueue(new Callback() {
-                    //используем Handler, чтобы показывать ошибки в Main потоке, т.к. наши коллбеки возвращаются в рабочем потоке
-                    Handler mainHandler = new Handler(getActivity().getMainLooper());
-
-                    @Override
-                    public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                        mainHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                showMessage(R.string.request_error);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onResponse(@NonNull Call call, @NonNull final Response response) throws IOException {
-                        mainHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!response.isSuccessful()) {
-                                    //todo добавить полноценную обработку ошибок по кодам ответа от сервера и телу запроса
-                                    showMessage(R.string.auth_error);
-                                } else {
-                                    try {
-                                        Gson gson = new Gson();
-                                        JsonObject json = gson.fromJson(response.body().string(), JsonObject.class);
-                                        User user = gson.fromJson(json.get("data"), User.class);
-
-                                        Intent startProfileIntent = new Intent(getActivity(), ProfileActivity.class);
-                                        startProfileIntent.putExtra(ProfileActivity.USER_KEY, user);
-                                        startActivity(startProfileIntent);
-                                        getActivity().finish();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
-
-                */
             } else {
                 showMessage(R.string.input_error);
             }
@@ -170,7 +115,13 @@ public class AuthFragment extends Fragment {
         @Override
         public void onFocusChange(View view, boolean hasFocus) {
             if (hasFocus) {
-                mEmail.showDropDown();
+
+                //Oreo 8.0 show popup window error - need to delay a bit
+                new Handler(getActivity().getMainLooper()).postDelayed(new Runnable(){
+                    public void run() {
+                        mEmail.showDropDown();
+                    }
+                }, 200L);
             }
         }
     };
